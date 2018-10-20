@@ -35,15 +35,25 @@ class Dumper
     end
 
     def payee_name(transaction)
-      parse_transaction_at(32, transaction).try(:strip)
+      # DKB provides the "name" in a specific field
+      transaction.name
     end
 
     def payee_iban(transaction)
-      parse_transaction_at(31, transaction)
+      # DKB provides the "iban" in a specific field
+      transaction.iban
     end
 
     def memo(transaction)
-      parse_transaction_at(20, transaction).try(:strip)
+      
+      # DKB: We just geht the SVWZ field if it is available  
+      if transaction.sepa["SVWZ"]
+        data = transaction.sepa["SVWZ"] + ' (' + transaction.description + ')'
+      else
+        # otherwise we take the information field, which is probably always there for DKB transactions
+        data = transaction.information + ' (' + transaction.description + ')'
+      end
+      data
     end
 
     def amount(transaction)
@@ -65,6 +75,7 @@ class Dumper
     end
 
     def import_id(transaction)
+      #puts JSON.pretty_generate(transaction)
       data = [transaction_type(transaction),
               transaction.date,
               transaction.amount,
@@ -73,7 +84,6 @@ class Dumper
               payee_iban(transaction),
               payee_name(transaction).try(:downcase),
               @iban].join
-
       Digest::MD5.hexdigest(data)
     end
 
