@@ -22,7 +22,7 @@ class Dumper
 
     # Quick Fix for DKB: Do not import "vorgemerkte" transactions
     # They are marked as "SONSTIGER EINZUG". So we do not import them.
-    return nil if transaction.description == "SONSTIGER EINZUG"
+    return nil if @transaction.try(:description) == "SONSTIGER EINZUG"
 
     ::TransactionCreator.call(
       account_id: account_id,

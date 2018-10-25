@@ -6,17 +6,16 @@ class Dumper
 
     def initialize(params = {})
       @ynab_id  = params.fetch('ynab_id')
-      @username = params.fetch('username')
-      @password = params.fetch('password')
-      @card     = params.fetch('card')
-      @csv     = params.fetch('csv')
+      @file     = params.fetch('file')
     end
 
     def fetch_transactions
-      
-      puts JSON.pretty_generate(client.get_sepa_accounts)
-      account = client.get_sepa_accounts.find { |a| a[:iban] == @iban }
-      statement = client.get_statement(account, Date.today - 35, Date.today)
+
+      #puts JSON.pretty_generate()
+      lines = CSV.read(@file, headers: false, col_sep: ';', encoding:'iso-8859-1:utf-8')
+      lines = lines.drop(8)
+
+      lines.map{ |t| to_ynab_transaction(t) }
 
       #statement.map { |t| to_ynab_transaction(t) }
     end
@@ -28,39 +27,23 @@ class Dumper
     end
 
     def date(transaction)
-      transaction.entry_date || transaction.date
+      return Date.parse(transaction[2])
     end
 
     def payee_name(transaction)
-      # DKB provides the "name" in a specific field
-      transaction.name
+      transaction[3]
     end
 
     def payee_iban(transaction)
-      # DKB provides the "iban" in a specific field
-      transaction.iban
+      transaction[3]
     end
 
     def memo(transaction)
-      
-      # DKB: We just geht the SVWZ field if it is available  
-      if transaction.sepa["SVWZ"]
-        data = transaction.sepa["SVWZ"] + ' (' + transaction.description + ')'
-      else
-        # otherwise we take the information field, which is probably always there for DKB transactions
-        data = transaction.information + ' (' + transaction.description + ')'
-      end
-      data
+      transaction[3]
     end
 
     def amount(transaction)
-      amount =
-        if transaction.funds_code == 'D'
-          "-#{transaction.amount}"
-        else
-          transaction.amount
-        end
-
+      amount = transaction[4].gsub(',', '.')
       (amount.to_f * 1000).to_i
     end
 
@@ -68,42 +51,18 @@ class Dumper
       memo = memo(transaction)
       return nil unless memo
 
-      memo.include?('Atm') || memo.include?('Bargeld')
+      memo.include?('VOLKSBANK EGSTEISSLING') || memo.include?('Ausgleich Kreditkarte')
     end
 
     def import_id(transaction)
       #puts JSON.pretty_generate(transaction)
-      data = [transaction_type(transaction),
-              transaction.date,
-              transaction.amount,
-              transaction.funds_code,
-              transaction.reference.try(:downcase),
-              payee_iban(transaction),
-              payee_name(transaction).try(:downcase),
-              @iban].join
+      data = [
+              transaction[2],
+              transaction[3],
+              transaction[4]
+              ].join
       Digest::MD5.hexdigest(data)
     end
 
-    def transaction_type(transaction)
-      # Changing the result of this method will
-      # change the hash returned by the `import_id` which
-      # could will result in duplicated entries.
-
-      str = parse_transaction_at(0, transaction).encode('iso-8859-1')
-                                                .force_encoding('utf-8')
-      return nil unless str
-      str[1..-1]
-    end
-
-    def parse_transaction_at(position, transaction)
-      # I don't know who invented this structure but I hope
-      # the responsible people know how inconvenient it is.
-
-      seperator = transaction.details.seperator
-      array = transaction.details.source.split("#{seperator}#{position}")
-      return nil if array.size < 2
-
-      array.last.split(seperator).first
-    end
   end
 end

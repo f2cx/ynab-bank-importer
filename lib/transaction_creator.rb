@@ -52,7 +52,7 @@ class TransactionCreator
       memo = options.fetch(:memo, nil)
       # The api has a limit of 100 characters for the momo field
       memo = truncate(memo, 100)
-      return "ATM withdrawal #{memo}" if withdrawal?(options)
+      return "#{memo}" if withdrawal?(options)
       memo
     end
 
