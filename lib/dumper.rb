@@ -9,6 +9,8 @@ class Dumper
       Dumper::N26
     when :fints
       Dumper::Fints
+    when :csv
+      Dumper::Csv
     else
       raise "Dumper \"#{name}\" not supported."
     end
