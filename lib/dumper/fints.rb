@@ -21,6 +21,8 @@ class Dumper
       account = client.get_sepa_accounts.find { |a| a[:iban] == @iban }
       statement = client.get_statement(account, Date.today - 35, Date.today)
 
+      puts JSON.pretty_generate(statement)
+
       statement.map { |t| to_ynab_transaction(t) }
     end
 
@@ -36,7 +38,11 @@ class Dumper
 
     def payee_name(transaction)
       # DKB provides the "name" in a specific field
-      transaction.name
+      if transaction.sepa["ABWA"]
+        return transaction.sepa["ABWA"]
+      else
+        transaction.name
+      end
     end
 
     def payee_iban(transaction)
@@ -75,11 +81,11 @@ class Dumper
     end
 
     def import_id(transaction)
-      #puts JSON.pretty_generate(transaction)
       data = [transaction_type(transaction),
               transaction.date,
               transaction.amount,
               transaction.funds_code,
+              memo(transaction),
               transaction.reference.try(:downcase),
               payee_iban(transaction),
               payee_name(transaction).try(:downcase),

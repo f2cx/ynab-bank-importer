@@ -18,11 +18,20 @@ class Dumper
 
   # rubocop:disable Metrics/MethodLength
   def to_ynab_transaction(transaction)
-    return nil if date(transaction) > Date.today
+
 
     # Quick Fix for DKB: Do not import "vorgemerkte" transactions
     # They are marked as "SONSTIGER EINZUG". So we do not import them.
-    return nil if @transaction.try(:description) == "SONSTIGER EINZUG"
+    begin
+       if transaction.description == "SONSTIGER EINZUG"
+          puts "IGNORE RECORD: " + JSON.pretty_generate(transaction)
+          return nil
+       end
+    rescue
+       puts "NO DESCRIPTION FOR: " + JSON.pretty_generate(transaction)
+    end
+
+    return nil if date(transaction) > Date.today
 
     ::TransactionCreator.call(
       account_id: account_id,
