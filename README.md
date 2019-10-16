@@ -11,6 +11,12 @@ This is a ruby script that **pulls your transactions from your banks** and impor
 
 ---
 
+## Disclaimer
+
+**Using this tool is on your own risk.** I can **not** garantee you that this will work for you. Also I can **not** garantee that it won't up your YNAB data. I highly recommend to start with a new Budget or at least test it with a new one before you use your existing Budget.
+
+---
+
 ## Supported banks
 
 * Most German and Austrian banks _(all banks that implement the FinTS standard)_
@@ -31,7 +37,9 @@ The script also includes some additional logic like detecting internal transacti
 
 # Known Problems
 
-* Currently no known problems
+* [Most banks can't be used anymore because of the PSD2](https://github.com/schurig/ynab-bank-importer/issues/74)
+> We're investigating in alternative approaches to gain access to the latest transactions..
+* Please read the notes in each Dumper _[(see Wiki)](https://github.com/schurig/ynab-bank-importer/wiki#supported-dumpers)_ to understand the limitations
 
 ____________________
 
@@ -39,10 +47,13 @@ ____________________
 
 Support and contriubution of any kind is always welcome!!!
 
-I'm not that into hardware. It would be super awesome if someone could help making this work on Raspbian. I already tried but building the docker container fails _(Dockerfile.rpi)_. The PR related to that you can find here: [18](https://github.com/schurig/ynab-bank-importer/pull/18)
-
 # Thanks
 
+* [@dequis](https://github.com/dequis) for preventing the script from failing in the future [PR #70](https://github.com/schurig/ynab-bank-importer/pull/70) and keeping an eye on the development experience [PR #69](https://github.com/schurig/ynab-bank-importer/pull/69)
+* [@moay](https://github.com/moay), [@yuvke](https://github.com/yuvke), [@BluetriX](https://github.com/BluetriX) for the help on debugging an error with not existing dates [Issue #52](https://github.com/schurig/ynab-bank-importer/issues/52)
+* [@mathijshoogland](https://github.com/mathijshoogland) for updating the dependencies [PR #49](https://github.com/schurig/ynab-bank-importer/pull/49)
+* [@manuelgrabowski](https://github.com/manuelgrabowski), [@martinlabuschin](https://github.com/martinlabuschin) and [@peterjeschke](https://github.com/peterjeschke) for giving feedback on a new N26 dumper config flag that prevents transactions to be imported multiple times [PR #38](https://github.com/schurig/ynab-bank-importer/pull/38)
+* [@peterjeschke](https://github.com/peterjeschke) for fixing a bug that happened when the FinTS username was an integer [PR #35](https://github.com/schurig/ynab-bank-importer/pull/35)
 * [@derintendant](https://github.com/derintendant) for spotting and fixing edge cases [PR #27](https://github.com/schurig/ynab-bank-importer/pull/27) (improves error messages) and [PR #28](https://github.com/schurig/ynab-bank-importer/pull/28) (truncates the payee field if it's too long)
 * [@manuelgrabowski](https://github.com/manuelgrabowski) for implementing a fallback in the FinTS dumper [PR #26](https://github.com/schurig/ynab-bank-importer/pull/26)
 * [@markuspabst](https://github.com/markuspabst) for spotting an error in the readme [PR #11](https://github.com/schurig/ynab-bank-importer/pull/11)
